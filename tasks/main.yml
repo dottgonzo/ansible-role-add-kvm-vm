@@ -1,6 +1,6 @@
 ---
 - name: Copy file with owner and permissions
-  command: "virt-clone --original {{ original_image }} --name {{ newimage_name }} --file /var/lib/libvirt/images/{{ newimage_name }}.qcow2"
+  command: "virt-clone --original {{ image_original }} --name {{ vm_name }} --file /var/lib/libvirt/images/{{ vm_name }}.qcow2"
   changed_when: True
 
 - name: get new MAC
@@ -13,13 +13,13 @@
 - name: Set IP by Host DHCP server
   command: <
     virsh net-update default add-last ip-dhcp-host
-    '<host mac="{{ imagemac.stdout }}" name="{{ newimage_name }}" ip="{{ newimage_ip }}"/>'
+    '<host mac="{{ imagemac.stdout }}" name="{{ vm_name }}" ip="{{ vm_ip }}"/>'
     --live --config
   changed_when: True
 
 
 - name: Start VM
-  command: "virsh start {{ newimage_name }}"
+  command: "virsh start {{ vm_name }}"
   changed_when: True
 
 - name: Edit Networking by netplan
@@ -29,6 +29,6 @@
 - name: Remove IP by Host DHCP server
   command: <
     virsh net-update default delete ip-dhcp-host
-    '<host mac="{{ imagemac.stdout }}" name="{{ newimage_name }}" ip="{{ newimage_ip }}"/>'
+    '<host mac="{{ imagemac.stdout }}" name="{{ vm_name }}" ip="{{ vm_ip }}"/>'
     --live --config
   changed_when: True
