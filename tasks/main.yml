@@ -1,0 +1,27 @@
+---
+- name: Copy file with owner and permissions
+  command: "virt-clone --original {{ original_image }} --name {{ newimage_name }} --file /var/lib/libvirt/images/{{ newimage_name }}.qcow2"
+
+- name: get new MAC
+  shell: virsh  dumpxml test | grep 'mac address'|sed -e "s/<mac address=//g"|sed -e "s/'//g"|sed -e "s/\/>//g"|sed -e 's/ //g'
+  register: imagemac
+
+- name: Set IP by Host DHCP server
+  shell: <
+    virsh net-update default add-last ip-dhcp-host
+    '<host mac="{{ imagemac.stdout }}" name="{{ newimage_name }}" ip="{{ newimage_ip }}"/>'
+    --live --config
+
+- name: Start VM
+  command: "virsh start {{ newimage_name }}"
+  when: newimage_nostart is undefined
+
+- name: Edit Networking by netplan
+  include_role:
+    name: dottgonzo.ansible_role_set_netplan_file
+
+- name: Remove IP by Host DHCP server
+  shell: <
+    virsh net-update default delete ip-dhcp-host
+    '<host mac="{{ imagemac.stdout }}" name="{{ newimage_name }}" ip="{{ newimage_ip }}"/>'
+    --live --config
