@@ -1,11 +1,11 @@
 ---
 - name: Copy file with owner and permissions
-  command: "virt-clone --original {{ image_original }} --name {{ vm_name }} --file /var/lib/libvirt/images/{{ vm_name }}.qcow2"
+  command: "virt-clone --original {{ image_original }} --name {{ vm_name }} --file {{ vm_path if vm_path is defined else '/var/lib/libvirt/images/' }}{{ vm_name }}.qcow2"
   changed_when: True
 
 
 - name: Customize image files for networking
-  shell: "virt-customize -a /var/lib/libvirt/images/{{ vm_name }}.qcow2 --run-command 'echo \"{{ netplan_configuration }}\" > {{ netplan_config_file }} '"
+  shell: "virt-customize -a {{ vm_path if vm_path is defined else '/var/lib/libvirt/images/' }}{{ vm_name }}.qcow2 --run-command 'echo \"{{ netplan_configuration }}\" > {{ netplan_config_file }} '"
   changed_when: True
 
 - name: Start VM
