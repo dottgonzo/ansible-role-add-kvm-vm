@@ -6,15 +6,12 @@
 - name: get new MAC
   shell: |
     set -o pipefail
-    virsh  dumpxml test | grep 'mac address'|sed -e "s/<mac address=//g"|sed -e "s/'//g"|sed -e "s/\/>//g"|sed -e 's/ //g'
+    virsh  dumpxml {{ vm_name }} | grep 'mac address'|sed -e "s/<mac address=//g"|sed -e "s/'//g"|sed -e "s/\/>//g"|sed -e 's/ //g'
   register: imagemac
   changed_when: True
 
 - name: Set IP by Host DHCP server
-  command: <
-    virsh net-update default add-last ip-dhcp-host
-    '<host mac="{{ imagemac.stdout }}" name="{{ vm_name }}" ip="{{ vm_ip }}"/>'
-    --live --config
+  command: virsh net-update default add-last ip-dhcp-host '<host mac="{{ imagemac.stdout }}" name="{{ vm_name }}" ip="{{ vm_ip }}"/>' --live --config
   changed_when: True
 
 
@@ -27,8 +24,5 @@
     name: dottgonzo.ansible_role_set_netplan_file
 
 - name: Remove IP by Host DHCP server
-  command: <
-    virsh net-update default delete ip-dhcp-host
-    '<host mac="{{ imagemac.stdout }}" name="{{ vm_name }}" ip="{{ vm_ip }}"/>'
-    --live --config
+  command: virsh net-update default delete ip-dhcp-host '<host mac="{{ imagemac.stdout }}" name="{{ vm_name }}" ip="{{ vm_ip }}"/>' --live --config
   changed_when: True
