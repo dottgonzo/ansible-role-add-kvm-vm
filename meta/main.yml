@@ -1,8 +1,5 @@
 ---
 
-dependencies:
-  - dottgonzo.ansible_role_set_netplan_file
-
 galaxy_info:
   author: Dario Caruso
   description: Setup New Virtual Machine on KVM hypervisor

@@ -3,26 +3,12 @@
   command: "virt-clone --original {{ image_original }} --name {{ vm_name }} --file /var/lib/libvirt/images/{{ vm_name }}.qcow2"
   changed_when: True
 
-- name: get new MAC
-  shell: |
-    set -o pipefail
-    virsh  dumpxml {{ vm_name }} | grep 'mac address'|sed -e "s/<mac address=//g"|sed -e "s/'//g"|sed -e "s/\/>//g"|sed -e 's/ //g'
-  register: imagemac
-  changed_when: True
 
-- name: Set IP by Host DHCP server
-  command: virsh net-update default add-last ip-dhcp-host '<host mac="{{ imagemac.stdout }}" name="{{ vm_name }}" ip="{{ vm_ip }}"/>' --live --config
+- name: Customize image files for networking
+  shell: "virt-customize -a /var/lib/libvirt/images/{{ vm_name }}.qcow2 --run-command 'echo \"{{ netplan_configuration }}\" > {{ netplan_config_file }} '"
   changed_when: True
-
 
 - name: Start VM
   command: "virsh start {{ vm_name }}"
-  changed_when: True
+  when: nostartvm is undefined
 
-- name: Edit Networking by netplan
-  include_role:
-    name: dottgonzo.ansible_role_set_netplan_file
-
-- name: Remove IP by Host DHCP server
-  command: virsh net-update default delete ip-dhcp-host '<host mac="{{ imagemac.stdout }}" name="{{ vm_name }}" ip="{{ vm_ip }}"/>' --live --config
-  changed_when: True
