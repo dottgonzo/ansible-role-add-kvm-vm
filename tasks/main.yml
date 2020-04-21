@@ -11,4 +11,3 @@
 - name: Start VM
   command: "virsh start {{ vm_name }}"
   when: nostartvm is undefined
-
